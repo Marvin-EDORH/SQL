@@ -220,7 +220,8 @@ WITH products AS (
           `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` AS ga, 
           UNNEST(ga.hits) AS hits, 
           UNNEST(hits.product) AS hp 
-     GROUP BY 1 )
+     GROUP BY 1 
+)
      
 , classe AS (
      SELECT 
@@ -229,7 +230,8 @@ WITH products AS (
           NTILE(2) OVER (ORDER BY products.products DESC) AS classe
      FROM 
           products 
-     ORDER BY 2 DESC)
+     ORDER BY 2 DESC
+)
 
 SELECT 
      MAX(products) AS median_poduct 
@@ -246,7 +248,8 @@ WITH products AS (
           `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` AS ga, 
           UNNEST(ga.hits) AS hits, 
           UNNEST(hits.product) AS hp 
-     GROUP BY 1, 2)
+     GROUP BY 1, 2
+)
 
 SELECT 
      v2ProductName,
