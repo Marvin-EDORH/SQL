@@ -10,7 +10,7 @@ SELECT
      device.deviceCategory, 
      10 AS dix,
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 
 ##################################################### WHERE #############################################################
 
