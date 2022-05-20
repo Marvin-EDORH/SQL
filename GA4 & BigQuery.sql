@@ -130,16 +130,17 @@ ORDER BY 2 DESC
 
 ###################################################### CASE WHEN ##########################################################
 
-WITH event_name AS (
+WITH products AS (
     SELECT 
-        event_name,
+        items.item_name  AS product 
         device.category,
-    FROM 
-        `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+     FROM 
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` AS ga, 
+            UNNEST(ga.items) AS items
 )
 
 SELECT
-    event_name.event_name,
+    product,
     CASE 
         WHEN
             SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) > 0 
@@ -170,272 +171,272 @@ SELECT
             AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) > 0  
             AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) > 0  THEN "mobile & tablet & desktop" END AS device
 FROM 
-    event_name
+    products
 GROUP BY 1
 
 ################################################### ARRAY & UNNEST #####################################################
 
-WITH transactions AS (
+WITH pages_location AS (
     SELECT 
-        DISTINCT fullvisitorid,
-        hp.v2ProductName AS products
+        DISTINCT user_pseudo_id,
+        (SELECT value.string_value FROM UNNEST(event_params) WHERE key = "page_location") AS page_location,
     FROM 
-        `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` AS ga, 
-        UNNEST(ga.hits) AS hits, 
-        UNNEST(hits.product) AS hp 
-    WHERE 
-          hits.transaction.transactionId IS NOT NULL 
-          AND hp.v2ProductName like "%/%"
+        `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` 
 )
 
 , array_table AS (
      SELECT 
-          fullvisitorid,
-          SPLIT(products,'/') AS products
+          user_pseudo_id,
+          SPLIT(page_location,'/') AS split_page_location
      FROM
-          transactions
+          pages_location
 )
     
 SELECT 
-    fullvisitorid,
-    products_sold,
+    user_pseudo_id,
+    page_location,
 FROM
     array_table
-CROSS JOIN UNNEST(array_table.products) AS products_sold
+CROSS JOIN UNNEST(array_table.split_page_location) AS page_location
 
 ###################################################### OVER #############################################################
 
-WITH products AS (
+WITH sessions AS (
      SELECT
-          fullvisitorid,
-          COUNT(DISTINCT hp.v2ProductName) AS products 
+          user_pseudo_id,
+          COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) AS sessions
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` AS ga, 
-          UNNEST(ga.hits) AS hits, 
-          UNNEST(hits.product) AS hp 
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
      GROUP BY 1 
 )
      
 , classe AS (
      SELECT 
-          fullvisitorid, 
-          products.products, 
-          NTILE(2) OVER (ORDER BY products.products DESC) AS classe
+          user_pseudo_id, 
+          sessions.sessions, 
+          NTILE(2) OVER (ORDER BY sessions.sessions DESC) AS classe
      FROM 
-          products 
+          sessions 
      ORDER BY 2 DESC
 )
 
 SELECT 
-     MAX(products) AS median_poduct 
+     MAX(sessions) AS sessions_poduct 
 FROM 
      classe 
 WHERE classe.classe = 2
 
-WITH products AS (
+WITH events AS (
      SELECT  
-          hp.v2ProductName, 
-          geoNetwork.continent, 
-          COUNT(DISTINCT fullvisitorid) AS visits
+          event_name, 
+          device.category, 
+          COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) AS visits
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` AS ga, 
-          UNNEST(ga.hits) AS hits, 
-          UNNEST(hits.product) AS hp 
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` 
      GROUP BY 1, 2
 )
 
 SELECT 
-     v2ProductName,
-     continent, 
+     event_name,
+     category, 
      visits, 
-     SUM(visits) OVER(PARTITION BY v2ProductName), 
-     SUM(visits) OVER(PARTITION BY v2ProductName ORDER BY visits DESC ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING),
-     SUM(visits) OVER(PARTITION BY v2ProductName ORDER BY visits DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 
-     SUM(visits) OVER(PARTITION BY v2ProductName ORDER BY visits DESC ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING), 
-     SUM(visits) OVER(PARTITION BY v2ProductName ORDER BY visits DESC ROWS BETWEEN 2 PRECEDING AND CURRENT ROW),
-     ROW_NUMBER() OVER(PARTITION BY v2ProductName),
-     RANK() OVER(PARTITION BY v2ProductName ORDER BY visits DESC)
+     SUM(visits) OVER(PARTITION BY event_name), 
+     SUM(visits) OVER(PARTITION BY event_name ORDER BY visits DESC ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING),
+     SUM(visits) OVER(PARTITION BY event_name ORDER BY visits DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 
+     SUM(visits) OVER(PARTITION BY event_name ORDER BY visits DESC ROWS BETWEEN CURRENT ROW AND 2 FOLLOWING), 
+     SUM(visits) OVER(PARTITION BY event_name ORDER BY visits DESC ROWS BETWEEN 2 PRECEDING AND CURRENT ROW),
+     ROW_NUMBER() OVER(PARTITION BY event_name),
+     RANK() OVER(PARTITION BY event_name ORDER BY visits DESC)
 FROM 
-     products 
+     events 
 ORDER BY 1, 3 DESC 
 
 ##################################################### UNION ############################################################
 
 #fusion
 SELECT 
-     DISTINCT fullvisitorid, 
+     DISTINCT user_pseudo_id, 
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161224`
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20201101`
  
 UNION ALL 
 
 SELECT 
-     DISTINCT fullvisitorid, 
+     DISTINCT user_pseudo_id, 
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161225`
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20201102`
 
 #intersection
 SELECT 
-     DISTINCT fullvisitorid, 
+     DISTINCT user_pseudo_id, 
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161224` 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20201101` 
 
 INTERSECT DISTINCT 
 
 SELECT 
-     DISTINCT fullvisitorid, 
+     DISTINCT user_pseudo_id, 
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161225`
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20201102`
 
 #extraction
 SELECT 
-     DISTINCT fullvisitorid, 
+     DISTINCT user_pseudo_id, 
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161224` 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20201101` 
 
 EXCEPT DISTINCT 
 
 SELECT 
-     DISTINCT fullvisitorid, 
+     DISTINCT user_pseudo_id, 
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161225` 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_20201102` 
 
 ###################################################### JOIN #############################################################
 
 WITH visits AS (
      SELECT 
-          fullvisitorid, 
-          SUM(totals.visits) AS visits
+          user_pseudo_id, 
+          COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) AS visits
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
      GROUP BY 1
 )
 
 , transactions AS (
      SELECT 
-          fullvisitorid, 
-          COUNT(DISTINCT hits.transaction.transactionId) AS transactions
+          user_pseudo_id, 
+          COUNT(DISTINCT ecommerce.transaction_id) AS transactions
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`AS ga, 
-          UNNEST(ga.hits) AS hits 
-     WHERE  hits.transaction.transactionId IS NOT NULL
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+     WHERE ecommerce.transaction_id IS NOT NULL
      GROUP BY 1
 )
      
 SELECT 
-     visits.fullvisitorid, 
-     visits.visits, transactions.transactions  
+     visits.user_pseudo_id, 
+     visits.visits, 
+     transactions.transactions  
 FROM 
      visits
 INNER JOIN  
      transactions #jointure unique sur les 2 tables
-     ON visits.fullvisitorid = transactions.fullvisitorid
+     ON visits.user_pseudo_id = transactions.user_pseudo_id
+
+
+##########
 
 WITH visits AS (
      SELECT 
-          fullvisitorid, 
-          SUM(totals.visits) AS visits
+          user_pseudo_id, 
+          COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) AS visits
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`
-     GROUP BY 1
-)
-     
-, transactions AS (
-     SELECT 
-          fullvisitorid, 
-          COUNT(DISTINCT hits.transaction.transactionId) AS transactions
-     FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`AS ga, 
-     UNNEST(ga.hits) AS hits 
-     WHERE  hits.transaction.transactionId IS NOT NULL
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
      GROUP BY 1
 )
 
+, transactions AS (
+     SELECT 
+          user_pseudo_id, 
+          COUNT(DISTINCT ecommerce.transaction_id) AS transactions
+     FROM 
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+     WHERE ecommerce.transaction_id IS NOT NULL
+     GROUP BY 1
+)
+     
 SELECT 
-     visits.fullvisitorid, 
+     visits.user_pseudo_id, 
      visits.visits, transactions.transactions  
 FROM 
      visits
 LEFT JOIN  
      transactions #LEFT OUTER JOIN #jointure la 1ère table
-     USING (fullvisitorid)
+     USING (user_pseudo_id)
+
+##########
 
 WITH visits AS (
      SELECT 
-          fullvisitorid, 
-          SUM(totals.visits) AS visits
+          user_pseudo_id, 
+          COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) AS visits
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
      GROUP BY 1
 )
-     
+
 , transactions AS (
      SELECT 
-          fullvisitorid, 
-          COUNT(DISTINCT hits.transaction.transactionId) AS transactions
+          user_pseudo_id, 
+          COUNT(DISTINCT ecommerce.transaction_id) AS transactions
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`AS ga, 
-     UNNEST(ga.hits) AS hits 
-     WHERE hits.transaction.transactionId IS NOT NULL
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+     WHERE ecommerce.transaction_id IS NOT NULL
      GROUP BY 1
 )
      
 SELECT 
-     visits.fullvisitorid, 
+     visits.user_pseudo_id, 
      visits.visits, transactions.transactions  
 FROM 
      visits
 RIGHT JOIN  
      transactions #RIGHT OUTER JOIN #jointure sur la 2ème table
-USING (fullvisitorid) 
+USING (user_pseudo_id) 
+
+
+##########
 
 WITH visits AS (
      SELECT 
-          fullvisitorid, 
-          SUM(totals.visits) AS visits
+          user_pseudo_id, 
+          COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) AS visits
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
      GROUP BY 1
 )
-     
+
 , transactions AS (
      SELECT 
-          fullvisitorid, 
-          COUNT(DISTINCT hits.transaction.transactionId) AS transactions
+          user_pseudo_id, 
+          COUNT(DISTINCT ecommerce.transaction_id) AS transactions
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_2016*`AS ga, 
-     UNNEST(ga.hits) AS hits WHERE  hits.transaction.transactionId IS NOT NULL
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+     WHERE ecommerce.transaction_id IS NOT NULL
      GROUP BY 1
 )
 
 SELECT 
-     visits.fullvisitorid, 
+     visits.user_pseudo_id, 
      visits.visits, 
      transactions.transactions  
 FROM
      visits
 FULL JOIN 
      transactions #FULL OUTER JOIN #jointure complete sur les 2 tables
-     USING (fullvisitorid)
+     USING (user_pseudo_id)
+
+
+##########
+
 
 WITH visitors AS (
      SELECT 
-          DISTINCT fullvisitorid 
+          DISTINCT user_pseudo_id 
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_20161201`
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 )
           
 , products AS (
      SELECT 
-          DISTINCT hp.v2ProductName AS product 
+          DISTINCT items.item_name  AS product 
      FROM 
-          `bigquery-public-data.google_analytics_sample.ga_sessions_*` AS ga, 
-     UNNEST(ga.hits) AS hits, 
-     UNNEST(hits.product) AS hp 
+          `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` AS ga, 
+     UNNEST(ga.items) AS items
 )
 
 SELECT 
-     fullvisitorid, 
+     user_pseudo_id, 
      product 
 FROM 
      visitors 
@@ -444,24 +445,24 @@ CROSS JOIN products #FROM visitors, products #developpement factoriel
 ###################################################### STRING ##########################################################
 
 SELECT 
-     DISTINCT CONCAT("ID",fullvisitorid) AS fullvisitorid, 
-     device.deviceCategory,
-     LENGTH(device.deviceCategory), #nombre de caractère
-     LEFT(device.deviceCategory,1), #x caratères depuis la gauche
-     RIGHT(device.deviceCategory,1), #x caratères depuis la droite
-     UPPER(device.deviceCategory), #majuscule
-     LOWER(UPPER(device.deviceCategory)), #minuscule
-     LPAD(device.deviceCategory,10,"0"), #ajoute x caratères depuis la gauche jusqu'à qu'il y en ai 10
-     RPAD(device.deviceCategory,10,"0"), #ajoute x caratères depuis la droite jusqu'à qu'il y en ai 10
-     LTRIM(LPAD(device.deviceCategory,10,"0"),"0"), #supprimer la chaine de caratères "..." depuis la gauche 
-     RTRIM(RPAD(device.deviceCategory,10,"0"),"0"), #supprimer la chaine de caratères "..." depuis la droite
-     TRIM(device.deviceCategory,"e"), #supprimer la chaine de caratères "..."
-     REPLACE(device.deviceCategory,"1","2"), #remplacer 1 par 2
-     REVERSE(device.deviceCategory), #inverser la chaine de caractère
-     SUBSTR(device.deviceCategory,1, 2), #2 caratères depuis la position 1
-     SUBSTR(device.deviceCategory,3), #tous les caracteres depuis la position 3
+     DISTINCT CONCAT("ID",user_pseudo_id) AS user_pseudo_id, 
+     device.category,
+     LENGTH(device.category), #nombre de caractère
+     LEFT(device.category,1), #x caratères depuis la gauche
+     RIGHT(device.category,1), #x caratères depuis la droite
+     UPPER(device.category), #majuscule
+     LOWER(UPPER(device.category)), #minuscule
+     LPAD(device.category,10,"0"), #ajoute x caratères depuis la gauche jusqu'à qu'il y en ai 10
+     RPAD(device.category,10,"0"), #ajoute x caratères depuis la droite jusqu'à qu'il y en ai 10
+     LTRIM(LPAD(device.category,10,"0"),"0"), #supprimer la chaine de caratères "..." depuis la gauche 
+     RTRIM(RPAD(device.category,10,"0"),"0"), #supprimer la chaine de caratères "..." depuis la droite
+     TRIM(device.category,"e"), #supprimer la chaine de caratères "..."
+     REPLACE(device.category,"1","2"), #remplacer 1 par 2
+     REVERSE(device.category), #inverser la chaine de caractère
+     SUBSTR(device.category,1, 2), #2 caratères depuis la position 1
+     SUBSTR(device.category,3), #tous les caracteres depuis la position 3
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201`
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 
 #################################################### DATA & TIME ######################################################
 
@@ -510,7 +511,7 @@ SELECT
      LAST_DAY(CURRENT_DATE(), MONTH) AS last_day,
      LAST_DAY(CURRENT_DATE(), WEEK) AS last_day, #1 WEEK = 7 DAY
      LAST_DAY(CURRENT_DATE(), WEEK(MONDAY)) AS last_day,
-     PARSE_DATE("%Y%m%d", date) #convertit STRING en DATE
+     PARSE_DATE("%Y%m%d", event_date) #convertit STRING en DATE
      #https://cloud.google.com/bigquery/docs/reference/standard-sql/date_functions?hl=fr#supported_format_elements_for_date
 
 #DATE_TRUNC
