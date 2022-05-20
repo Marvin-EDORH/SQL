@@ -7,14 +7,13 @@
 
 SELECT
     DISTINCT 
-    CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id, 
+    CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id, 
     event_name,
     event_date,
     event_timestamp,
     geo.continent,
     geo.sub_continent,
     geo.country, 
-    geo.region,
     geo.city,
     device.category,
     device.mobile_brand_name,	
@@ -30,36 +29,31 @@ FROM
 ##################################################### WHERE #############################################################
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id, 
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE device.category = "desktop" #egale
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE device.category <> "desktop" #different
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE device.category != "desktop" #different
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE device.category IN ("mobile", "tablet") #parmis
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE 
@@ -69,50 +63,43 @@ WHERE
       AND device.category NOT LIKE "d%k" #commence par ... ou fini par ... ou contient ... et ne commence et fini par ...&...
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX > '20161201'  #superieur à
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX >= '20161201' #superieur ou egal à
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE _TABLE_SUFFIX < '20161201'  #inferieur à
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+    DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` 
 WHERE _TABLE_SUFFIX <= '20161201'  #inferieur ou egal à
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` 
 WHERE _TABLE_SUFFIX BETWEEN '20161201' AND '20161231' #entre
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+     DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE  event_dimensions IS NULL #est vide
 
 SELECT 
-     DISTINCT 
-     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+    DISTINCT CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS session_id,
 FROM 
      `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE  event_dimensions IS NOT NULL #est non vide
@@ -120,74 +107,70 @@ WHERE  event_dimensions IS NOT NULL #est non vide
 ###################################################### GROUP BY ########################################################
 
 SELECT 
-     event_name, 
-     SUM(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_number") #somme 
-     ROUND(AVG(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_number"),2) #moyenne arrondie 
-     COUNT(CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) #compte
+     user_pseudo_id, 
+     SUM(event_value_in_usd), #somme 
+     ROUND(AVG(event_value_in_usd),2), #moyenne arrondie 
+     COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))), #compte
      MIN(event_date), #minimum
      MAX(event_date), #maximum
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_201612*` 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 GROUP BY 1
 
 ###################################################### HAVING ##########################################################
 
 SELECT 
-     fullvisitorid, 
-     SUM(totals.visits) AS visits
+     user_pseudo_id, 
+     COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) AS visits
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_201612*` 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` 
 GROUP BY 1
-HAVING SUM(totals.visits) >= 2
+HAVING COUNT(DISTINCT CONCAT(user_pseudo_id,(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) >= 2
 ORDER BY 2 DESC
 
 ###################################################### CASE WHEN ##########################################################
 
-WITH transactions AS (
+WITH event_name AS (
     SELECT 
-        hp.v2ProductName AS products,
-        device.deviceCategory
+        event_name,
+        device.category,
     FROM 
-        `bigquery-public-data.google_analytics_sample.ga_sessions_*` AS ga, 
-        UNNEST(ga.hits) AS hits, 
-        UNNEST(hits.product) AS hp 
-    WHERE 
-          hits.transaction.transactionId IS NOT NULL 
+        `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 )
 
 SELECT
-    products,
+    event_name.event_name,
     CASE 
         WHEN
-            SUM(CASE WHEN deviceCategory = "mobile" THEN 1 ELSE 0 END) > 0 
-            AND SUM(CASE WHEN deviceCategory = "tablet" THEN 1 ELSE 0 END) = 0  
-            AND SUM(CASE WHEN deviceCategory = "desktop" THEN 1 ELSE 0 END) = 0  THEN "mobile" 
+            SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) > 0 
+            AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) = 0  
+            AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) = 0  THEN "mobile" 
        WHEN
-            SUM(CASE WHEN deviceCategory = "mobile" THEN 1 ELSE 0 END) = 0 
-            AND SUM(CASE WHEN deviceCategory = "tablet" THEN 1 ELSE 0 END) > 0  
-            AND SUM(CASE WHEN deviceCategory = "desktop" THEN 1 ELSE 0 END) = 0  THEN "tablet" 
+            SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) = 0 
+            AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) > 0  
+            AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) = 0  THEN "tablet" 
         WHEN
-            SUM(CASE WHEN deviceCategory = "mobile" THEN 1 ELSE 0 END) = 0 
-            AND SUM(CASE WHEN deviceCategory = "tablet" THEN 1 ELSE 0 END) = 0  
-            AND SUM(CASE WHEN deviceCategory = "desktop" THEN 1 ELSE 0 END) > 0  THEN "desktop" 
+            SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) = 0 
+            AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) = 0  
+            AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) > 0  THEN "desktop" 
         WHEN
-            SUM(CASE WHEN deviceCategory = "mobile" THEN 1 ELSE 0 END) > 0 
-            AND SUM(CASE WHEN deviceCategory = "tablet" THEN 1 ELSE 0 END) > 0  
-            AND SUM(CASE WHEN deviceCategory = "desktop" THEN 1 ELSE 0 END) = 0  THEN "mobile & tablet" 
+            SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) > 0 
+            AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) > 0  
+            AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) = 0  THEN "mobile & tablet" 
         WHEN
-            SUM(CASE WHEN deviceCategory = "mobile" THEN 1 ELSE 0 END) > 0 
-            AND SUM(CASE WHEN deviceCategory = "tablet" THEN 1 ELSE 0 END) = 0  
-            AND SUM(CASE WHEN deviceCategory = "desktop" THEN 1 ELSE 0 END) > 0  THEN "mobile & desktop" 
+            SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) > 0 
+            AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) = 0  
+            AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) > 0  THEN "mobile & desktop" 
         WHEN
-            SUM(CASE WHEN deviceCategory = "mobile" THEN 1 ELSE 0 END) = 0 
-            AND SUM(CASE WHEN deviceCategory = "tablet" THEN 1 ELSE 0 END) > 0  
-            AND SUM(CASE WHEN deviceCategory = "desktop" THEN 1 ELSE 0 END) > 0  THEN "tablet & desktop" 
+            SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) = 0 
+            AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) > 0  
+            AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) > 0  THEN "tablet & desktop" 
         WHEN
-            SUM(CASE WHEN deviceCategory = "mobile" THEN 1 ELSE 0 END) > 0 
-            AND SUM(CASE WHEN deviceCategory = "tablet" THEN 1 ELSE 0 END) > 0  
-            AND SUM(CASE WHEN deviceCategory = "desktop" THEN 1 ELSE 0 END) > 0  THEN "mobile & tablet & desktop" END AS device
+            SUM(CASE WHEN category = "mobile" THEN 1 ELSE 0 END) > 0 
+            AND SUM(CASE WHEN category = "tablet" THEN 1 ELSE 0 END) > 0  
+            AND SUM(CASE WHEN category = "desktop" THEN 1 ELSE 0 END) > 0  THEN "mobile & tablet & desktop" END AS device
 FROM 
-    transactions
+    event_name
 GROUP BY 1
 
 ################################################### ARRAY & UNNEST #####################################################
