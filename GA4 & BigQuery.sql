@@ -5,117 +5,127 @@
 
 ##################################################### SELECT ############################################################
 
-SELECT 
-     DISTINCT fullvisitorid, 
-     device.deviceCategory, 
-     10 AS dix,
+SELECT
+    DISTINCT 
+    CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id, 
+    event_name,
+    event_date,
+    event_timestamp,
+    geo.continent,
+    geo.sub_continent,
+    geo.country, 
+    geo.region,
+    geo.city,
+    device.category,
+    device.mobile_brand_name,	
+    device.mobile_model_name,
+    device.operating_system,
+    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = "page_location") AS page_location,
+    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = "page_title") AS page_title, 
+    user_first_touch_timestamp,
+    10 AS dix,
 FROM 
-     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 
 ##################################################### WHERE #############################################################
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     device.deviceCategory
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` 
-WHERE device.deviceCategory = "desktop" #egale
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE device.category = "desktop" #egale
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     device.deviceCategory
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` 
-WHERE device.deviceCategory <> "desktop" #different
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE device.category <> "desktop" #different
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     device.deviceCategory
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` 
-WHERE device.deviceCategory != "desktop" #different
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE device.category != "desktop" #different
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     device.deviceCategory
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` 
-WHERE device.deviceCategory IN ("mobile", "tablet") #parmis
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE device.category IN ("mobile", "tablet") #parmis
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     device.deviceCategory
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201` 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE 
-     (device.deviceCategory LIKE "le%" 
-          OR device.deviceCategory LIKE "%le" 
-          OR device.deviceCategory LIKE "%le%") 
-      AND device.deviceCategory NOT LIKE "d%k" #commence par ... ou fini par ... ou contient ... et ne commence et fini par ...&...
+     (device.category LIKE "le%" 
+          OR device.category LIKE "%le" 
+          OR device.category LIKE "%le%") 
+      AND device.category NOT LIKE "d%k" #commence par ... ou fini par ... ou contient ... et ne commence et fini par ...&...
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     date
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_*` 
-WHERE _TABLE_SUFFIX > '20161201' 
-ORDER BY 2 #superieur à
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX > '20161201'  #superieur à
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     date
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_*` 
-WHERE _TABLE_SUFFIX >= '20161201' 
-ORDER BY 2 #superieur ou egal à
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX >= '20161201' #superieur ou egal à
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     date
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_*` 
-WHERE _TABLE_SUFFIX < '20161201' 
-ORDER BY 2 DESC #inferieur à
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX < '20161201'  #inferieur à
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     date
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_*` 
-WHERE _TABLE_SUFFIX <= '20161201' 
-ORDER BY 2 
-DESC #inferieur ou egal à
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` 
+WHERE _TABLE_SUFFIX <= '20161201'  #inferieur ou egal à
 
 SELECT 
-     DISTINCT fullvisitorid, 
-     date
-FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*` 
-WHERE _TABLE_SUFFIX BETWEEN '20161201' AND '20161231' 
-ORDER BY 2 #entre
-
-SELECT 
-     DISTINCT fullvisitorid
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201`AS ga, 
-     UNNEST(ga.hits) AS hits 
-WHERE hits.transaction.transactionId IS NULL #est vide
+    `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*` 
+WHERE _TABLE_SUFFIX BETWEEN '20161201' AND '20161231' #entre
 
 SELECT 
-     DISTINCT fullvisitorid
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
 FROM 
-     `bigquery-public-data.google_analytics_sample.ga_sessions_20161201`AS ga, 
-     UNNEST(ga.hits) AS hits 
-WHERE hits.transaction.transactionId IS NOT NULL #est non vide
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE  event_dimensions IS NULL #est vide
+
+SELECT 
+     DISTINCT 
+     CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id")) AS ga_session_id
+FROM 
+     `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE  event_dimensions IS NOT NULL #est non vide
 
 ###################################################### GROUP BY ########################################################
 
 SELECT 
-     fullvisitorid, 
-     SUM(totals.visits) #somme
-     ROUND(AVG(totals.visits),2) #moyenne arrondie
-     COUNT(DISTINCT device.deviceCategory) #compte
-     MIN(date), #minimum
-     MAX(date), #maximum
+     event_name, 
+     SUM(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_number") #somme 
+     ROUND(AVG(SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_number"),2) #moyenne arrondie 
+     COUNT(CONCAT (user_pseudo_id, (SELECT value.int_value FROM UNNEST(event_params) WHERE key = "ga_session_id"))) #compte
+     MIN(event_date), #minimum
+     MAX(event_date), #maximum
 FROM 
      `bigquery-public-data.google_analytics_sample.ga_sessions_201612*` 
 GROUP BY 1
