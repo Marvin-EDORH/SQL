@@ -201,6 +201,7 @@ CROSS JOIN UNNEST(array_table.split_page_location) AS page_location
 ###################################################### OVER #############################################################
 
 ROW() OVER()
+NULLIF ()
 
 WITH sessions AS (
      SELECT
