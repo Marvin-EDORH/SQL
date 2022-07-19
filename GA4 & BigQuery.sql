@@ -448,6 +448,7 @@ CROSS JOIN products #FROM visitors, products #developpement factoriel
 
 SELECT 
      DISTINCT CONCAT("ID",user_pseudo_id) AS user_pseudo_id, 
+     'BALI'||EXTRACT(YEAR from CURRENT_DATE())||EXTRACT(MONTH from CURRENT_DATE())||EXTRACT(DAY from CURRENT_DATE())||GENERATE_UUID() as PK_LIGNE,
      device.category,
      LENGTH(device.category), #nombre de caractère
      LEFT(device.category,1), #x caratères depuis la gauche
